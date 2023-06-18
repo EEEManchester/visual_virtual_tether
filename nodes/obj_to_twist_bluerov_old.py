@@ -62,7 +62,7 @@ class bluerov_to_twist:
             self.vertical_thrust2 = 0
             self.pitch2 = 0
             self.roll2 = 0
-            self.yaw2 = 0
+            self.yaw2 = msg.angular.z
 
     def cmd_vel1_callback(self, msg):
         with self.data_lock:
@@ -82,7 +82,7 @@ class bluerov_to_twist:
             to_twist.linear.z = self.vertical_thrust1
             to_twist.angular.x = self.pitch1
             to_twist.angular.y = self.roll1
-            to_twist.angular.z = self.yaw1
+            to_twist.angular.z = self.yaw1 + self.yaw2
             self.control_pub.publish(to_twist)
 
             rate.sleep()

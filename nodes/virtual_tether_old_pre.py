@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import rospy
-from geometry_msgs.msg import Twist,Point
+from geometry_msgs.msg import Twist,Point, Quaternion
 from std_msgs.msg import Float64
 from apriltag_ros.msg import AprilTagDetectionRawArray
+from apriltag_ros.msg import AprilTagDetectionArray
 import math
+import tf
 
 class Virtual_tether:
     def __init__(self):
@@ -26,11 +28,27 @@ class Virtual_tether:
         self.centre_state_y = 0
         self.vel_x = 0
         self.vel_y = 0
+        self.vel_yaw = 0
         # self.k_p = 1.0
         self.k_d = 0.5
+        self.q_yaw = Quaternion()
+        self.euler_yaw = 0
 
         self.control_pub = rospy.Publisher('cmd_vel2', Twist, queue_size=1)
+        self.eyaw_pub = rospy.Publisher('euler_yaw', Float64, queue_size=1)
+        self.qyaw_pub = rospy.Publisher('q_yaw', Quaternion, queue_size=1)
         rospy.Subscriber('tag_detections_raw', AprilTagDetectionRawArray, self.detection_callback)
+        rospy.Subscriber('tag_detections', AprilTagDetectionArray, self.yaw_callback)
+
+    def yaw_callback(self,msg):
+        if msg.detections:
+            self.q_yaw = msg.detections[0].pose.pose.pose.orientation
+            quaternion_yaw = [self.q_yaw.x, self.q_yaw.y, self.q_yaw.z, self.q_yaw.w]
+            self.euler_yaw = tf.transformations.euler_from_quaternion(quaternion_yaw)[2]
+            self.vel_yaw = -1 + ((self.euler_yaw - (-3.14)) * (1 - (-1)) / (3.14 - (-3.14)))
+        if abs(self.vel_yaw) > 0.5:
+            # If vel_yaw is positive, set it to 0.5; if it's negative, set it to -0.5
+            self.vel_yaw = 0.5 if self.vel_yaw > 0 else -0.5
 
     def detection_callback(self, msg):
         current_time = rospy.Time.now().to_sec()
@@ -84,29 +102,29 @@ class Virtual_tether:
         while not rospy.is_shutdown():
             if self.detections:
                 
-                # # for sim
-                # x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
-                # y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
-                # cmd_vel_2 = Twist()
-                # cmd_vel_2.linear.x = v_y
-                # cmd_vel_2.linear.y = v_x
-                # cmd_vel_2.linear.z = 0
-                # cmd_vel_2.angular.x = y_state
-                # cmd_vel_2.angular.y = x_state
-                # cmd_vel_2.angular.z = 0
-                # self.control_pub.publish(cmd_vel_2)
-
-                # for real robots
+                # for sim
                 x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
                 y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
                 cmd_vel_2 = Twist()
-                cmd_vel_2.linear.x = -0.7*v_y
-                cmd_vel_2.linear.y = 0.7*v_x
+                cmd_vel_2.linear.x = v_y
+                cmd_vel_2.linear.y = v_x
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
-                cmd_vel_2.angular.z = 0
+                cmd_vel_2.angular.z = self.vel_yaw
                 self.control_pub.publish(cmd_vel_2)
+
+                # # for real robots
+                # x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
+                # y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
+                # cmd_vel_2 = Twist()
+                # cmd_vel_2.linear.x = -0.7*v_y
+                # cmd_vel_2.linear.y = 0.7*v_x
+                # cmd_vel_2.linear.z = 0
+                # cmd_vel_2.angular.x = y_state
+                # cmd_vel_2.angular.y = x_state
+                # cmd_vel_2.angular.z = self.vel_yaw
+                # self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
             else:
