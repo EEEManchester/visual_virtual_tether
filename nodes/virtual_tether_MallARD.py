@@ -34,7 +34,7 @@ class Virtual_tether:
         self.q_yaw = Quaternion()
         self.euler_yaw = 0
 
-        self.control_pub = rospy.Publisher('cmd_vel2', Twist, queue_size=1)
+        self.control_pub = rospy.Publisher('/mallard/cmd_vel2', Twist, queue_size=1)
         self.eyaw_pub = rospy.Publisher('euler_yaw', Float64, queue_size=1)
         self.qyaw_pub = rospy.Publisher('q_yaw', Quaternion, queue_size=1)
         rospy.Subscriber('tag_detections_raw', AprilTagDetectionRawArray, self.detection_callback)
@@ -79,6 +79,7 @@ class Virtual_tether:
             # self.vel_x = self.target.x - msg.detections[0].centre.x
             # self.vel_y = self.target.y - msg.detections[0].centre.y
         else:
+            self.detections = []
             print('out of LoS!')
 
     def vel_state(self, img_current, img_target, img_vel, l, d):
@@ -88,10 +89,10 @@ class Virtual_tether:
             v_safe = (img_target - img_current )/(img_target + abs(img_vel)) 
             return 5, v_safe 
         elif img_current > 2 * img_target -d:
-            v_danger = -1.3
+            v_danger = -0.8
             return 9, v_danger
         elif  img_current <d:
-            v_danger = 1.3
+            v_danger = 0.8
             return 9, v_danger
         else:
             v_tether = (img_target - img_current - img_vel)/(img_target + abs(img_vel)) 
@@ -102,30 +103,30 @@ class Virtual_tether:
         while not rospy.is_shutdown():
             if self.detections:
             
-                # # for sim
+                # for sim
+                x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
+                y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
+                cmd_vel_2 = Twist()
+                cmd_vel_2.linear.x = 0.2 * v_y
+                cmd_vel_2.linear.y = 0.2 * v_x
+                cmd_vel_2.linear.z = 0
+                cmd_vel_2.angular.x = y_state
+                cmd_vel_2.angular.y = x_state
+                cmd_vel_2.angular.z = -0.8*self.vel_yaw
+                self.control_pub.publish(cmd_vel_2)
+                self.qyaw_pub.publish(self.q_yaw)
+                self.eyaw_pub.publish(self.vel_yaw)
+                # # for real robots
                 # x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
                 # y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
                 # cmd_vel_2 = Twist()
-                # cmd_vel_2.linear.x = 0.7*v_y
+                # cmd_vel_2.linear.x = -0.7*v_y
                 # cmd_vel_2.linear.y = 0.7*v_x
                 # cmd_vel_2.linear.z = 0
                 # cmd_vel_2.angular.x = y_state
                 # cmd_vel_2.angular.y = x_state
-                # cmd_vel_2.angular.z = -0.8*self.vel_yaw
+                # cmd_vel_2.angular.z = self.vel_yaw
                 # self.control_pub.publish(cmd_vel_2)
-                # self.qyaw_pub.publish(self.q_yaw)
-                # self.eyaw_pub.publish(self.vel_yaw)
-                # for real robots
-                x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
-                y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
-                cmd_vel_2 = Twist()
-                cmd_vel_2.linear.x = -0.7*v_y
-                cmd_vel_2.linear.y = 0.7*v_x
-                cmd_vel_2.linear.z = 0
-                cmd_vel_2.angular.x = y_state
-                cmd_vel_2.angular.y = x_state
-                cmd_vel_2.angular.z = self.vel_yaw
-                self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
     

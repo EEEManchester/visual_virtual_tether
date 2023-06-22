@@ -103,28 +103,28 @@ class Virtual_tether:
             if self.detections:
                 
                 # for sim
+                # x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
+                # y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
+                # cmd_vel_2 = Twist()
+                # cmd_vel_2.linear.x = v_y
+                # cmd_vel_2.linear.y = v_x
+                # cmd_vel_2.linear.z = 0
+                # cmd_vel_2.angular.x = y_state
+                # cmd_vel_2.angular.y = x_state
+                # cmd_vel_2.angular.z = -self.vel_yaw
+                # self.control_pub.publish(cmd_vel_2)
+
+                # for real robots
                 x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
                 y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
                 cmd_vel_2 = Twist()
-                cmd_vel_2.linear.x = v_y
-                cmd_vel_2.linear.y = v_x
+                cmd_vel_2.linear.x = -0.7*v_y
+                cmd_vel_2.linear.y = 0.7*v_x
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
                 cmd_vel_2.angular.z = self.vel_yaw
                 self.control_pub.publish(cmd_vel_2)
-
-                # # for real robots
-                # x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
-                # y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
-                # cmd_vel_2 = Twist()
-                # cmd_vel_2.linear.x = -0.7*v_y
-                # cmd_vel_2.linear.y = 0.7*v_x
-                # cmd_vel_2.linear.z = 0
-                # cmd_vel_2.angular.x = y_state
-                # cmd_vel_2.angular.y = x_state
-                # cmd_vel_2.angular.z = self.vel_yaw
-                # self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
             else:

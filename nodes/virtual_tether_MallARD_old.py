@@ -34,7 +34,7 @@ class Virtual_tether:
         self.q_yaw = Quaternion()
         self.euler_yaw = 0
 
-        self.control_pub = rospy.Publisher('cmd_vel2', Twist, queue_size=1)
+        self.control_pub = rospy.Publisher('/mallard/cmd_vel2', Twist, queue_size=1)
         self.eyaw_pub = rospy.Publisher('euler_yaw', Float64, queue_size=1)
         self.qyaw_pub = rospy.Publisher('q_yaw', Quaternion, queue_size=1)
         rospy.Subscriber('tag_detections_raw', AprilTagDetectionRawArray, self.detection_callback)
@@ -49,7 +49,7 @@ class Virtual_tether:
         if abs(self.vel_yaw) > 0.5:
             # If vel_yaw is positive, set it to 0.5; if it's negative, set it to -0.5
             self.vel_yaw = 0.5 if self.vel_yaw > 0 else -0.5
-                
+
     def detection_callback(self, msg):
         current_time = rospy.Time.now().to_sec()
 
@@ -79,23 +79,26 @@ class Virtual_tether:
             # self.vel_x = self.target.x - msg.detections[0].centre.x
             # self.vel_y = self.target.y - msg.detections[0].centre.y
         else:
+            self.detections = []
             print('out of LoS!')
 
     def vel_state(self, img_current, img_target, img_vel, l, d):
         # return vel in (-1 1) and  vel_state
-        
-        if img_target - 0.5*l < img_current < img_target + 0.5*l:
-            v_safe = (img_target - img_current )/(img_target + abs(img_vel)) 
-            return 5, v_safe 
-        elif img_current > 2 * img_target -d:
-            v_danger = -1.3
-            return 9, v_danger
-        elif  img_current <d:
-            v_danger = 1.3
-            return 9, v_danger
-        else:
-            v_tether = (img_target - img_current - img_vel)/(img_target + abs(img_vel)) 
-            return 6, v_tether
+
+        # if img_target - 0.5*l < img_current < img_target + 0.5*l:
+        #     v_safe = (img_target - img_current )/(img_target + abs(img_vel)) 
+        #     return 5, v_safe 
+        # elif img_current > 2 * img_target -d:
+        #     v_danger = -1.3
+        #     return 9, v_danger
+        # elif  img_current <d:
+        #     v_danger = 1.3
+        #     return 9, v_danger
+        # else:
+        # v_tether = (img_target - img_current - img_vel)/(img_target + abs(img_vel)) 
+        v_tether = (img_target - img_current)/(img_target) 
+
+        return 6, v_tether
 
     def run(self):
         rate = rospy.Rate(50) # 50 Hz
@@ -106,29 +109,39 @@ class Virtual_tether:
                 # x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
                 # y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
                 # cmd_vel_2 = Twist()
-                # cmd_vel_2.linear.x = 0.7*v_y
-                # cmd_vel_2.linear.y = 0.7*v_x
+                # cmd_vel_2.linear.x = v_y
+                # cmd_vel_2.linear.y = v_x
                 # cmd_vel_2.linear.z = 0
                 # cmd_vel_2.angular.x = y_state
                 # cmd_vel_2.angular.y = x_state
-                # cmd_vel_2.angular.z = -0.8*self.vel_yaw
+                # cmd_vel_2.angular.z = self.vel_yaw
                 # self.control_pub.publish(cmd_vel_2)
-                # self.qyaw_pub.publish(self.q_yaw)
-                # self.eyaw_pub.publish(self.vel_yaw)
+
                 # for real robots
                 x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
                 y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
                 cmd_vel_2 = Twist()
-                cmd_vel_2.linear.x = -0.7*v_y
-                cmd_vel_2.linear.y = 0.7*v_x
+                # cmd_vel_2.linear.x = 0.2*v_y
+                # cmd_vel_2.linear.y = 0.2*v_x
+                cmd_vel_2.linear.x = 0.2*v_y
+                cmd_vel_2.linear.y = 0.2*v_x
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
-                cmd_vel_2.angular.z = self.vel_yaw
+                cmd_vel_2.angular.z = -self.vel_yaw
                 self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
-    
+            else:
+                cmd_vel_3 = Twist()
+                cmd_vel_3.linear.x = 0
+                cmd_vel_3.linear.y = 0
+                cmd_vel_3.linear.z = 0
+                cmd_vel_3.angular.x = 6
+                cmd_vel_3.angular.y = 6
+                cmd_vel_3.angular.z = 0
+                self.control_pub.publish(cmd_vel_3)
+                rate.sleep()
 def main():
     node = Virtual_tether()
     node.run()

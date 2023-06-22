@@ -57,7 +57,7 @@ class bluerov_to_twist:
                 rospy.loginfo("y danger")
                 self.y_danger_on = 0
                 # self.y_safe_on = 1
-            self.thrust2 =  -0.4*msg.linear.x
+            self.thrust2 =  -0.5*msg.linear.x
             self.lateral_thrust2 = 0.8*msg.linear.y 
             self.vertical_thrust2 = 0
             self.pitch2 = 0

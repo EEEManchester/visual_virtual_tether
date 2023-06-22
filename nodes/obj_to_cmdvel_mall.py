@@ -87,8 +87,8 @@ class mallard_to_twist:
         rate = rospy.Rate(50) # 50 Hz
         while not rospy.is_shutdown():
             to_twist = Twist()
-            to_twist.linear.x = 1*(self.thrust1 * self.x_safe_on * self.x_danger_on + self.thrust2)
-            to_twist.linear.y = 1*(self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2)
+            to_twist.linear.x = 0.5*(self.thrust1 * self.x_safe_on * self.x_danger_on + self.thrust2)
+            to_twist.linear.y = 0.5*(self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2)
             to_twist.linear.z = self.vertical_thrust1
             to_twist.angular.x = self.pitch1
             to_twist.angular.y = self.roll1

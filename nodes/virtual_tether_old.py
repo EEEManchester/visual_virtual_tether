@@ -124,7 +124,7 @@ class Virtual_tether:
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
-                cmd_vel_2.angular.z = self.vel_yaw
+                cmd_vel_2.angular.z = -self.vel_yaw
                 self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
