@@ -79,6 +79,7 @@ class Virtual_tether:
             # self.vel_x = self.target.x - msg.detections[0].centre.x
             # self.vel_y = self.target.y - msg.detections[0].centre.y
         else:
+            self.detections = []
             print('out of LoS!')
 
     def vel_state(self, img_current, img_target, img_vel, l, d):
@@ -124,9 +125,19 @@ class Virtual_tether:
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
-                cmd_vel_2.angular.z = self.vel_yaw
+                cmd_vel_2.angular.z = -self.vel_yaw
                 self.control_pub.publish(cmd_vel_2)
 
+                rate.sleep()
+            else:
+                cmd_vel_3 = Twist()
+                cmd_vel_3.linear.x = 0
+                cmd_vel_3.linear.y = 0
+                cmd_vel_3.linear.z = 0
+                cmd_vel_3.angular.x = 6
+                cmd_vel_3.angular.y = 6
+                cmd_vel_3.angular.z = 0
+                self.control_pub.publish(cmd_vel_3)
                 rate.sleep()
     
 def main():
