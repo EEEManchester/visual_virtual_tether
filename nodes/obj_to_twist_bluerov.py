@@ -30,6 +30,9 @@ class bluerov_to_twist:
         self.control_pub = rospy.Publisher('twist', Twist, queue_size=1)
         rospy.Subscriber('cmd_vel2', Twist, self.cmd_vel2_callback)
         rospy.Subscriber('cmd_vel1', Twist, self.cmd_vel1_callback)
+        rospy.Subscriber('/bluerov/twist_setpoint_x', Twist, self.twist_setpoint_x_callback)
+        rospy.Subscriber('/bluerov/twist_setpoint_y', Twist, self.twist_setpoint_y_callback)
+
 
     def cmd_vel2_callback(self, msg):
         with self.data_lock:
@@ -57,8 +60,12 @@ class bluerov_to_twist:
                 rospy.loginfo("y danger")
                 self.y_danger_on = 0
                 # self.y_safe_on = 1
-            self.thrust2 =  -0.4*msg.linear.x
-            self.lateral_thrust2 = 0.8*msg.linear.y 
+                
+            # self.thrust2 =  -0.4*msg.linear.x #experiment tank parameter
+            # self.lateral_thrust2 = 0.8*msg.linear.y #experiment tank parameter
+            self.thrust2 =  -0.5*msg.linear.x #experiment tank parameter
+            self.lateral_thrust2 = 0.8*msg.linear.y #experiment tank parameter
+            
             self.vertical_thrust2 = 0
             self.pitch2 = 0
             self.roll2 = 0
@@ -73,12 +80,21 @@ class bluerov_to_twist:
             self.roll1 = msg.angular.x
             self.yaw1 = msg.angular.z
 
+    def twist_setpoint_x_callback(self, msg):
+        with self.data_lock:
+            self.thrust_set_x = msg.linear.x  
+
+    def twist_setpoint_y_callback(self, msg):
+        with self.data_lock:
+            self.lateral_thrust_set_y = msg.linear.y
+
+
     def run(self):
         rate = rospy.Rate(50) # 50 Hz
         while not rospy.is_shutdown():
             to_twist = Twist()
-            to_twist.linear.x = self.thrust1 * self.x_safe_on * self.x_danger_on + self.thrust2
-            to_twist.linear.y = self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2
+            to_twist.linear.x = self.thrust1 * self.x_safe_on * self.x_danger_on + self.thrust2 + self.thrust_set_x
+            to_twist.linear.y = self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2 + self.lateral_thrust_set_y
             to_twist.linear.z = self.vertical_thrust1
             to_twist.angular.x = self.pitch1
             to_twist.angular.y = self.roll1
