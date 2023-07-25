@@ -123,8 +123,8 @@ class Virtual_tether:
                 cmd_vel_2 = Twist()
                 # cmd_vel_2.linear.x = 0.2*v_y
                 # cmd_vel_2.linear.y = 0.2*v_x
-                cmd_vel_2.linear.x = 0.3*v_y
-                cmd_vel_2.linear.y = 0.3*v_x
+                cmd_vel_2.linear.x = 0.2*v_y
+                cmd_vel_2.linear.y = 0.2*v_x
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state

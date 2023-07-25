@@ -26,6 +26,8 @@ class bluerov_to_twist:
         self.y_danger_on = 1
         self.x_safe_on = 1
         self.y_safe_on = 1
+        self.thrust_set_x = 0.0
+        self.lateral_thrust_set_y = 0.0
 
         self.control_pub = rospy.Publisher('twist', Twist, queue_size=1)
         rospy.Subscriber('cmd_vel2', Twist, self.cmd_vel2_callback)
