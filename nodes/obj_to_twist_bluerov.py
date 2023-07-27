@@ -20,6 +20,7 @@ class bluerov_to_twist:
         self.pitch2 = 0.0
         self.yaw2 = 0.0
         self.thrust2 = 0.0
+        self.thrust_set_yaw = 0
         self.vertical_thrust2 = 0.0
         self.lateral_thrust2 = 0.0
         self.x_danger_on = 1
