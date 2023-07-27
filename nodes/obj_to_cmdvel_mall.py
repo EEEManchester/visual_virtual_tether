@@ -76,8 +76,8 @@ class mallard_to_twist:
 
     def cmd_vel1_callback(self, msg):
         with self.data_lock:
-            self.thrust1 = msg.linear.x
-            self.lateral_thrust1 = msg.linear.y
+            self.thrust1 = 2*msg.linear.x
+            self.lateral_thrust1 = 2*msg.linear.y
             self.vertical_thrust1 = 0
             self.pitch1 = 0
             self.roll1 = 0
