@@ -85,6 +85,7 @@ class bluerov_to_twist:
     def twist_setpoint_x_callback(self, msg):
         with self.data_lock:
             self.thrust_set_x = msg.linear.x  
+            self.thrust_set_yaw = msg.angular.z
 
     def twist_setpoint_y_callback(self, msg):
         with self.data_lock:
@@ -100,7 +101,7 @@ class bluerov_to_twist:
             to_twist.linear.z = self.vertical_thrust1
             to_twist.angular.x = self.pitch1
             to_twist.angular.y = self.roll1
-            to_twist.angular.z = self.yaw1 + self.yaw2
+            to_twist.angular.z = self.yaw1 + self.yaw2 +self.thrust_set_yaw 
             self.control_pub.publish(to_twist)
 
             rate.sleep()

@@ -72,7 +72,7 @@ class mallard_to_twist:
             self.vertical_thrust2 = 0
             self.pitch2 = 0
             self.roll2 = 0
-            self.yaw2 = 0
+            self.yaw2 = -0.5*msg.angular.z
 
     def cmd_vel1_callback(self, msg):
         with self.data_lock:
