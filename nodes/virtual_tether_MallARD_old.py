@@ -45,10 +45,10 @@ class Virtual_tether:
             self.q_yaw = msg.detections[0].pose.pose.pose.orientation
             quaternion_yaw = [self.q_yaw.x, self.q_yaw.y, self.q_yaw.z, self.q_yaw.w]
             self.euler_yaw = tf.transformations.euler_from_quaternion(quaternion_yaw)[2]
-            self.vel_yaw = -1 + ((self.euler_yaw - (-3.14)) * (1 - (-1)) / (3.14 - (-3.14)))
-        if abs(self.vel_yaw) > 0.5:
+            self.vel_yaw = -0.5 + ((self.euler_yaw - (-3.14)) * (0.5 - (-0.5)) / (3.14 - (-3.14)))
+        if abs(self.vel_yaw) > 0.13:
             # If vel_yaw is positive, set it to 0.5; if it's negative, set it to -0.5
-            self.vel_yaw = 0.5 if self.vel_yaw > 0 else -0.5
+            self.vel_yaw = 0.13 if self.vel_yaw > 0 else -0.13
 
     def detection_callback(self, msg):
         current_time = rospy.Time.now().to_sec()
@@ -123,12 +123,12 @@ class Virtual_tether:
                 cmd_vel_2 = Twist()
                 # cmd_vel_2.linear.x = 0.2*v_y
                 # cmd_vel_2.linear.y = 0.2*v_x
-                cmd_vel_2.linear.x = 0.2*v_y
-                cmd_vel_2.linear.y = 0.2*v_x
+                cmd_vel_2.linear.x = 0.23*v_y
+                cmd_vel_2.linear.y = 0.23*v_x
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
-                cmd_vel_2.angular.z = -self.vel_yaw
+                cmd_vel_2.angular.z = -0.9*self.vel_yaw
                 self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
