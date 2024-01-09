@@ -2,7 +2,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist,Point
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64,Int32
 import threading
 import math
 
@@ -26,12 +26,58 @@ class mallard_to_twist:
         self.y_danger_on = 1
         self.x_safe_on = 1
         self.y_safe_on = 1
+        self.left_k2 = 1
+        self.right_k2 = 1
+        self.forward_k2 =1 
+        self.backward_k2 =1 
+        self.left_k1 = 1
+        self.right_k1 = 1
+        self.forward_k1 =1 
+        self.backward_k1 =1 
 
         self.control_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         rospy.Subscriber('cmd_vel2', Twist, self.cmd_vel2_callback)
         rospy.Subscriber('cmd_vel1', Twist, self.cmd_vel1_callback)
+        rospy.Subscriber('sum_5_left', Int32, self.left_callback)
+        rospy.Subscriber('sum_5_right', Int32, self.right_callback)
+        rospy.Subscriber('sum_5_forward', Int32, self.forward_callback)
+        rospy.Subscriber('sum_5_backward', Int32, self.backward_callback)
 
+    def left_callback(self, msg):
+        value = msg.data
+        if value >=4:
+            self.left_k1 = 0
+            self.left_k2 = 1.3
+        else:
+            self.left_k1 = 1
+            self.left_k2 = 1
 
+    def right_callback(self, msg):
+        value = msg.data
+        if value >=4:
+            self.right_k1 = 0
+            self.right_k2 = 1.3
+        else:
+            self.right_k1 = 1
+            self.right_k2 = 1
+
+    def forward_callback(self, msg):
+        value = msg.data
+        if value >=4:
+            self.forward_k1 = 0
+            self.forward_k2 = 1.3
+        else:
+            self.forward_k1 = 1
+            self.forward_k2 = 1
+            
+    def backward_callback(self, msg):
+        value = msg.data
+        if value >=4:
+            self.backward_k1 = 0
+            self.backward_k2 = 1.3
+        else:
+            self.backward_k1 = 1
+            self.backward_k2 = 1
     def cmd_vel2_callback(self, msg):
         with self.data_lock:
             if msg.angular.x == 5:
@@ -93,8 +139,10 @@ class mallard_to_twist:
             # to_twist.linear.y = 0.5*(self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2)
             
             #sim
-            to_twist.linear.x = (self.thrust1 * self.x_safe_on * self.x_danger_on + self.thrust2)
-            to_twist.linear.y = 0.5*(self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2)
+            to_twist.linear.x = (self.forward_k1*self.backward_k1*self.thrust1 * self.x_safe_on * self.x_danger_on 
+                                 + self.backward_k2*self.forward_k2*self.thrust2)
+            to_twist.linear.y = 0.5*(self.left_k1*self.right_k1*self.lateral_thrust1 * self.y_safe_on * self.y_danger_on
+                                      + self.left_k2*self.right_k2*self.lateral_thrust2)
 
             # #sim for vvt slam problem 0813
             # to_twist.linear.x = (self.thrust1 + 0*self.thrust2)

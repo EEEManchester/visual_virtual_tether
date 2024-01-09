@@ -16,10 +16,17 @@ class bluerov_to_twist:
         self.thrust1 = 0.0
         self.vertical_thrust1 = 0.0
         self.lateral_thrust1 = 0.0
+        self.roll3 = 0.0
+        self.pitch3 = 0.0
+        self.yaw3 = 0.0
+        self.thrust3 = 0.0
+        self.vertical_thrust3 = 0.0
+        self.lateral_thrust3 = 0.0
         self.roll2 = 0.0
         self.pitch2 = 0.0
         self.yaw2 = 0.0
         self.thrust2 = 0.0
+        self.thrust_set_yaw = 0 
         self.vertical_thrust2 = 0.0
         self.lateral_thrust2 = 0.0
         self.x_danger_on = 1
@@ -30,6 +37,7 @@ class bluerov_to_twist:
         self.lateral_thrust_set_y = 0.0
 
         self.control_pub = rospy.Publisher('twist', Twist, queue_size=1)
+        rospy.Subscriber('cmd_vel3', Twist, self.cmd_vel3_callback)
         rospy.Subscriber('cmd_vel2', Twist, self.cmd_vel2_callback)
         rospy.Subscriber('cmd_vel1', Twist, self.cmd_vel1_callback)
         rospy.Subscriber('/bluerov/twist_setpoint_x', Twist, self.twist_setpoint_x_callback)
@@ -82,6 +90,15 @@ class bluerov_to_twist:
             self.roll1 = msg.angular.x
             self.yaw1 = msg.angular.z
 
+    def cmd_vel3_callback(self, msg):
+        with self.data_lock:
+            self.thrust3 = msg.linear.x
+            self.lateral_thrust3 = msg.linear.y
+            self.vertical_thrust3 = msg.linear.z
+            self.pitch3 = msg.angular.y
+            self.roll3 = msg.angular.x
+            self.yaw3 = msg.angular.z
+
     def twist_setpoint_x_callback(self, msg):
         with self.data_lock:
             self.thrust_set_x = msg.linear.x  
@@ -96,12 +113,22 @@ class bluerov_to_twist:
         rate = rospy.Rate(50) # 50 Hz
         while not rospy.is_shutdown():
             to_twist = Twist()
-            to_twist.linear.x = self.thrust1 * self.x_safe_on * self.x_danger_on + self.thrust2 + self.thrust_set_x
-            to_twist.linear.y = self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2 + self.lateral_thrust_set_y
+            # VVT set up
+            to_twist.linear.x = self.thrust1 * self.x_safe_on * self.x_danger_on + self.thrust2 + self.thrust_set_x + self.thrust3
+            to_twist.linear.y = self.lateral_thrust1 * self.y_safe_on * self.y_danger_on + self.lateral_thrust2 + self.lateral_thrust_set_y+ self.lateral_thrust3
             to_twist.linear.z = self.vertical_thrust1
             to_twist.angular.x = self.pitch1
             to_twist.angular.y = self.roll1
             to_twist.angular.z = self.yaw1 + self.yaw2 +self.thrust_set_yaw 
+            
+            # #VVT tro sim experiments for slam problem
+            # to_twist.linear.x = self.thrust1 + self.thrust2 + self.thrust_set_x
+            # to_twist.linear.y = self.lateral_thrust1 + self.lateral_thrust2 + self.lateral_thrust_set_y
+            # to_twist.linear.z = self.vertical_thrust1
+            # to_twist.angular.x = self.pitch1
+            # to_twist.angular.y = self.roll1
+            # to_twist.angular.z = self.yaw1 + self.yaw2 +self.thrust_set_yaw 
+            
             self.control_pub.publish(to_twist)
 
             rate.sleep()
