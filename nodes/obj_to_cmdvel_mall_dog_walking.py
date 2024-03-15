@@ -34,10 +34,15 @@ class mallard_to_twist:
         self.right_k1 = 1
         self.forward_k1 =1 
         self.backward_k1 =1 
+        self.linearx3 = 0
+        self.lineary3 = 0
+        self.angular3 = 0
+
 
         self.control_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         rospy.Subscriber('cmd_vel2', Twist, self.cmd_vel2_callback)
         rospy.Subscriber('cmd_vel1', Twist, self.cmd_vel1_callback)
+        rospy.Subscriber('cmd_vel3', Twist, self.cmd_vel3_callback)
         rospy.Subscriber('sum_5_left', Int32, self.left_callback)
         rospy.Subscriber('sum_5_right', Int32, self.right_callback)
         rospy.Subscriber('sum_5_forward', Int32, self.forward_callback)
@@ -46,8 +51,8 @@ class mallard_to_twist:
     def left_callback(self, msg):
         value = msg.data
         if value >=4:
-            self.left_k1 = 0
-            self.left_k2 = 1.3
+            self.left_k1 = 1
+            # self.left_k2 = 1.3
         else:
             self.left_k1 = 1
             self.left_k2 = 1
@@ -55,8 +60,8 @@ class mallard_to_twist:
     def right_callback(self, msg):
         value = msg.data
         if value >=4:
-            self.right_k1 = 0
-            self.right_k2 = 1.3
+            self.right_k1 = 1
+            # self.right_k2 = 1.3
         else:
             self.right_k1 = 1
             self.right_k2 = 1
@@ -65,7 +70,7 @@ class mallard_to_twist:
         value = msg.data
         if value >=4:
             self.forward_k1 = 0
-            self.forward_k2 = 1.3
+            self.forward_k2 = 1.1
         else:
             self.forward_k1 = 1
             self.forward_k2 = 1
@@ -74,7 +79,7 @@ class mallard_to_twist:
         value = msg.data
         if value >=4:
             self.backward_k1 = 0
-            self.backward_k2 = 1.3
+            self.backward_k2 = 1.1
         else:
             self.backward_k1 = 1
             self.backward_k2 = 1
@@ -129,6 +134,11 @@ class mallard_to_twist:
             self.roll1 = 0
             self.yaw1 = msg.angular.z
 
+    def cmd_vel3_callback(self, msg):
+        self.linearx3 = msg.linear.x
+        self.lineary3 = msg.linear.y
+        self.angular3 = msg.angular.z
+
     def run(self):
         rate = rospy.Rate(50) # 50 Hz
         while not rospy.is_shutdown():
@@ -140,9 +150,9 @@ class mallard_to_twist:
             
             #sim
             to_twist.linear.x = (self.forward_k1*self.backward_k1*self.thrust1 * self.x_safe_on * self.x_danger_on 
-                                 + self.backward_k2*self.forward_k2*self.thrust2)
+                                 + self.backward_k2*self.forward_k2*self.thrust2) +self.linearx3
             to_twist.linear.y = 0.5*(self.left_k1*self.right_k1*self.lateral_thrust1 * self.y_safe_on * self.y_danger_on
-                                      + self.left_k2*self.right_k2*self.lateral_thrust2)
+                                      + self.left_k2*self.right_k2*self.lateral_thrust2) +self.lineary3
 
             # #sim for vvt slam problem 0813
             # to_twist.linear.x = (self.thrust1 + 0*self.thrust2)
@@ -152,7 +162,7 @@ class mallard_to_twist:
             to_twist.linear.z = self.vertical_thrust1
             to_twist.angular.x = self.pitch1
             to_twist.angular.y = self.roll1
-            to_twist.angular.z = self.yaw1
+            to_twist.angular.z = self.yaw1 + self.angular3
             self.control_pub.publish(to_twist)
 
             rate.sleep()
