@@ -39,7 +39,7 @@ class bluerov_to_twist:
         self.control_pub = rospy.Publisher('twist', Twist, queue_size=1)
         rospy.Subscriber('cmd_vel3', Twist, self.cmd_vel3_callback)
         rospy.Subscriber('cmd_vel2', Twist, self.cmd_vel2_callback)
-        rospy.Subscriber('cmd_vel1', Twist, self.cmd_vel1_callback)
+        rospy.Subscriber('/test/cmd_vel1', Twist, self.cmd_vel1_callback)
         rospy.Subscriber('/bluerov/twist_setpoint_x', Twist, self.twist_setpoint_x_callback)
         rospy.Subscriber('/bluerov/twist_setpoint_y', Twist, self.twist_setpoint_y_callback)
 
@@ -56,8 +56,8 @@ class bluerov_to_twist:
                 # self.x_safe_on = 1
             if msg.angular.x == 9:
                 rospy.loginfo("x danger")
-                # self.x_danger_on = 0 #set to 0 for tether like motion
-                self.x_danger_on = 1 #always be 1, for obstacle avoidance
+                self.x_danger_on = 0
+                # self.x_safe_on = 1
             if msg.angular.y == 5:
                 rospy.loginfo("y safe")
                 # self.y_safe_on = 3
@@ -68,8 +68,8 @@ class bluerov_to_twist:
                 self.y_danger_on = 1
             if msg.angular.y == 9:
                 rospy.loginfo("y danger")
-                # self.y_danger_on = 0 #set to 0 for tether like motion
-                self.y_safe_on = 1 #always be 1, for obstacle avoidance
+                self.y_danger_on = 0
+                # self.y_safe_on = 1
                 
             # self.thrust2 =  -0.4*msg.linear.x #experiment tank parameter
             # self.lateral_thrust2 = 0.8*msg.linear.y #experiment tank parameter

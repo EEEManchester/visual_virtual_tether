@@ -123,7 +123,7 @@ class Virtual_tether:
             if x_area == area or y_area == area:
                 if current_time - self.last_time_in_area[area] >= 1:
                     self.time_accumulator[area] += 1
-                    self.time_accumulator[area] = min(4, self.time_accumulator[area])
+                    self.time_accumulator[area] = min(5, self.time_accumulator[area])
 
                     self.last_time_in_area[area] = current_time
                     pass

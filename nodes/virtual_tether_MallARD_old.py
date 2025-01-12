@@ -12,7 +12,7 @@ class Virtual_tether:
     def __init__(self):
         rospy.init_node('Virtual_tether')
 
-        self.target = Point(x=320, y=240)
+        self.target = Point(x=400, y=300)
         self.detections = []
         self.danger_d= 0
         self.safe_l = 0
@@ -121,14 +121,15 @@ class Virtual_tether:
                 x_state, v_x = self.vel_state(self.detections.detections[0].centre.x, self.target.x, self.current_velocity.x, self.safe_l, self.danger_d)
                 y_state, v_y = self.vel_state(self.detections.detections[0].centre.y, self.target.y, self.current_velocity.y, self.safe_l, self.danger_d)
                 cmd_vel_2 = Twist()
-                # cmd_vel_2.linear.x = 0.2*v_y
-                # cmd_vel_2.linear.y = 0.2*v_x
+                # cmd_vel_2.linear.x = 0*v_y
+                # cmd_vel_2.linear.y = 0*v_x
                 cmd_vel_2.linear.x = 0.23*v_y
-                cmd_vel_2.linear.y = 0.23*v_x
+                cmd_vel_2.linear.y = 0.43*v_x
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
                 cmd_vel_2.angular.z = -0.9*self.vel_yaw
+                # cmd_vel_2.angular.z = 0
                 self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
