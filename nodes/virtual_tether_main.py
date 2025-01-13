@@ -25,18 +25,24 @@ class Virtual_tether:
         self.vel_yaw = 0
         self.k_d = 0.5
 
+
+        self.tag_yaw_offset = rospy.get_param("virtuaL_tether_mallard_mixer/tag_yaw_offset", 0)
         self.control_pub = rospy.Publisher('virtual_tether/cmd_vel', Twist, queue_size=1)
         rospy.Subscriber('/tag_detections_raw', AprilTagDetectionRawArray, self.tag_detection_callback)
         rospy.Subscriber('/tag_detections', AprilTagDetectionArray, self.tag_raw_callback)
+        rospy.Subscriber('/tag_yaw_offset', Float64, self.offset_callback)
+
+    def offset_callback(self,msg):
+        self.tag_yaw_offset = msg.data
 
     def tag_raw_callback(self,msg):
         if msg.detections:
             q_yaw = msg.detections[0].pose.pose.pose.orientation
             quaternion_yaw = [q_yaw.x, q_yaw.y, q_yaw.z, q_yaw.w]
             euler_yaw = tf.transformations.euler_from_quaternion(quaternion_yaw)[2]
-            self.vel_yaw = -0.5 + ((euler_yaw - (-3.14)) * (0.5 - (-0.5)) / (3.14 - (-3.14)))
+            euler_yaw = self.get_offset(euler_yaw)
+            self.vel_yaw = euler_yaw / math.pi
         if abs(self.vel_yaw) > 0.13:
-            # If vel_yaw is positive, set it to 0.5; if it's negative, set it to -0.5
             self.vel_yaw = 0.13 if self.vel_yaw > 0 else -0.13
 
     def tag_detection_callback(self, msg):
@@ -69,6 +75,14 @@ class Virtual_tether:
             self.detections = []
             print('out of LoS!')
 
+    def get_offset(self, a):
+        a += self.tag_yaw_offset
+        if a > math.pi:
+            a -= 2 * math.pi
+        elif a < -math.pi:
+            a += 2 * math.pi
+        return a
+
     def vel_state(self, img_current, img_target, img_vel, l, d):
         v_tether = (img_target - img_current)/(img_target) 
 
@@ -89,7 +103,7 @@ class Virtual_tether:
                 cmd_vel_2.linear.z = 0
                 cmd_vel_2.angular.x = y_state
                 cmd_vel_2.angular.y = x_state
-                cmd_vel_2.angular.z = -0.9*self.vel_yaw
+                cmd_vel_2.angular.z = -self.vel_yaw * 0.9
                 self.control_pub.publish(cmd_vel_2)
 
                 rate.sleep()
