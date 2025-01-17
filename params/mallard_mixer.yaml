@@ -1,0 +1,12 @@
+overall_gain:
+  x: 1
+  y: 0.8
+  yaw: 0.5
+joy_gain:
+  x: 1
+  y: 0.8
+  yaw: 0.5
+virtual_tether_gain:
+  x: 1
+  y: 0.8
+  yaw: 0.5
