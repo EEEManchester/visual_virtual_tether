@@ -51,7 +51,7 @@ class mallard_to_twist_param:
 
     def set_reconfig(self, config):
         self.config = config
-        rospy.loginfo("Reconfiguration set.")
+        rospy.loginfo("Mallard mixer reconfiguration set.")
 
 class mallard_to_twist:
     def __init__(self):
@@ -97,7 +97,7 @@ class mallard_to_twist:
         })
 
     def reconfigure_callback(self, config, level):
-        rospy.loginfo("Reconfiguration received.")
+        rospy.loginfo("Mallard mixer reconfiguration received.")
         self.params.set_reconfig(config)
         return config
 

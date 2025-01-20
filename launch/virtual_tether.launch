@@ -1,10 +1,15 @@
 <launch>
 
-    <node name="virtual_tether" pkg="visual_virtual_tether" type="virtual_tether_main.py"/>
+    <node name="virtual_tether" pkg="visual_virtual_tether" type="virtual_tether_main.py">
+        <param name="tag_yaw_offset" value="0" />
+        <param name="gain_kp" value="1" />
+        <param name="gain_kd" value="0.00001" />
+        <param name="local_dead_reckoning_timeout" value="5" />
+        <param name="local_dead_reckoning_fixed_velocity" value="0.1" />
+    </node>
 
     <node name="virtuaL_tether_mallard_mixer" pkg="visual_virtual_tether" type="virtuaL_tether_mallard_mixer.py" output="screen">
         <rosparam file="$(find visual_virtual_tether)/params/mallard_mixer.yaml" command="load" />
-        <param name="tag_yaw_offset" value="-1.57" />
     </node>
 
 </launch>
