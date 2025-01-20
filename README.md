@@ -1,7 +1,7 @@
 # visual_virtual_tether
 the visual version of virtual tether package, in cooperate with apriltag_detection, bluerov_sim and Mallard_sim package, input camera detection and output velociety to bluerov2 and mallard.
 
-This is an attempt to clean up and further develop based on the original work by Kanzhong.
+This is an attempt to clean up and further develop based on the original work by Kanzhong. The original work is in [Kanzhong branch](https://github.com/EEEManchester/visual_virtual_tether/commits/kanzhong/)
 
 # What's new
 
