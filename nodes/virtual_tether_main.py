@@ -4,11 +4,10 @@ import math
 import threading
 
 import rospy
-from geometry_msgs.msg import Twist,Point, Quaternion
-from std_msgs.msg import Float64
+import tf
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
-import tf
+from geometry_msgs.msg import Twist,Point
 from apriltag_ros.msg import AprilTagDetectionRawArray
 from apriltag_ros.msg import AprilTagDetectionArray
 
@@ -173,7 +172,7 @@ class Virtual_tether:
                 cmd_vel.angular.y = x_state
                 cmd_vel.angular.z = -self.vel_yaw * 0.9
                 if self.dead_reckoning:
-                    if self.local_dead_reckoning_fixed_velocity:
+                    if self.param.local_dead_reckoning_fixed_velocity:
                         cmd_vel.linear.x, cmd_vel.linear.y = scale_to_range(cmd_vel.linear.x, cmd_vel.linear.y, self.param.local_dead_reckoning_fixed_velocity)
                     cmd_vel.angular.z = 0
                 self.control_pub.publish(cmd_vel)
@@ -183,7 +182,8 @@ class Virtual_tether:
 
 def main():
     node = Virtual_tether()
-    node.run()
+    node.run()    
+
         
 if __name__ == "__main__":
     main()
