@@ -79,6 +79,7 @@ class Virtual_tether:
         rospy.Subscriber('/tag_detections', AprilTagDetectionArray, self.tag_raw_callback)
 
         self.param = VirtualTetherPparam()
+        self.init_reconfiguration()
 
     def init_reconfiguration(self):
         self.reconf_server = Server(VirtualTetherConfig, self.reconfigure_callback)
