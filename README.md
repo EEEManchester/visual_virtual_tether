@@ -1,13 +1,6 @@
 # visual_virtual_tether
 This is an attempt to clean up and further develop based on the original work by Kanzhong. The original work is in [Kanzhong branch](https://github.com/EEEManchester/visual_virtual_tether/commits/kanzhong/)
 
-# What's new
-**21/01/2025**
-- Replaced P control with PD control for virtual tether.
-- Added local dead reckoning
-- Added gain parameters for mixing joystick and virtual tether velocity inputs
-- Added dynamic reconfiguration
-
 # Parameters
 #### ~virtual_tether/gain_kp
 Default to 1. P gain for the PD controller for virtual tether.
@@ -50,3 +43,10 @@ Virtual tether gain for liner velocity of robot in x-axis.
 
 #### ~virtual_tether_mallard_mixer/vt_gain_yaw
 Virtual tether gain for yaw velocity of robot in rad/s.
+
+# What's new
+**21/01/2025**
+- Replaced P control with PD control for virtual tether.
+- Added local dead reckoning
+- Added gain parameters for mixing joystick and virtual tether velocity inputs
+- Added dynamic reconfiguration
