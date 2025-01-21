@@ -2,7 +2,7 @@
 This is an attempt to clean up and further develop based on the original work by Kanzhong. The original work is in [Kanzhong branch](https://github.com/EEEManchester/visual_virtual_tether/commits/kanzhong/)
 
 # What's new
-
+**21/01/2025**
 - Replaced P control with PD control for virtual tether.
 - Added local dead reckoning
 - Added gain parameters for mixing joystick and virtual tether velocity inputs
